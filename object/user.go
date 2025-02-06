@@ -783,6 +783,17 @@ func UpdateUserForAllFields(id string, user *User) (bool, error) {
 }
 
 func AddUser(user *User) (bool, error) {
+	// Validar si el campo IdCard es único
+	if user.IdCard != "" {
+		exists, err := ormer.Engine.Exist(&User{IdCard: user.IdCard})
+		if err != nil {
+			return false, fmt.Errorf("error al verificar la unicidad del carné de identidad: %v", err)
+		}
+		if exists {
+			return false, fmt.Errorf("El Carné de identidad '%s' ya existe", user.IdCard)
+		}
+	}
+
 	if user.Id == "" {
 		application, err := GetApplicationByUser(user)
 		if err != nil {

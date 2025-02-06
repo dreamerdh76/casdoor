@@ -16,11 +16,44 @@ package object
 
 import (
 	"bytes"
+	"context"
+	"log"
+	"time"
 
+	"github.com/casdoor/casdoor/conf"
 	"github.com/dchest/captcha"
+	"github.com/redis/go-redis/v9"
 )
 
+var (
+	redisStore  *RedisStore
+	RedisClient *redis.Client
+	ctx         = context.Background()
+)
+
+type RedisStore struct {
+	Expire time.Duration
+}
+
+func (rs *RedisStore) Set(id string, digits []byte) {
+	RedisClient.Set(ctx, id, string(digits), rs.Expire)
+}
+
+func (rs *RedisStore) Get(id string, clear bool) (digits []byte) {
+	bs, err := RedisClient.Get(ctx, id).Bytes()
+	if err != nil {
+		log.Println(err)
+	}
+
+	return bs
+}
+
 func GetCaptcha() (string, []byte, error) {
+	if err := NewRedisClient(); err == nil {
+		redisStore = &RedisStore{Expire: 2 * time.Minute}
+		captcha.SetCustomStore(redisStore)
+	}
+
 	id := captcha.NewLen(5)
 
 	var buffer bytes.Buffer
@@ -37,4 +70,20 @@ func VerifyCaptcha(id string, digits string) bool {
 	res := captcha.VerifyString(id, digits)
 
 	return res
+}
+
+func NewRedisClient() error {
+	readTimeout := 2 * time.Second
+	writeTimeout := 2 * time.Second
+
+	RedisClient = redis.NewClient(&redis.Options{
+		Network:      "tcp",
+		Addr:         conf.GetConfigString("redisEndpoint"),
+		DB:           0,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+	})
+
+	_, err := RedisClient.Ping(ctx).Result()
+	return err
 }

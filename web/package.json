@@ -89,6 +89,8 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "browserslist": "^4.24.3",
+    "caniuse-lite": "^1.0.30001688",
     "cross-env": "^7.0.3",
     "cypress": "^12.5.1",
     "eslint": "8.22.0",
@@ -96,6 +98,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^4.3.8",
     "lint-staged": "^13.0.3",
+    "postcss-normalize": "^13.0.1",
     "stylelint": "^14.11.0",
     "stylelint-config-recommended-less": "^1.0.4",
     "stylelint-config-standard": "^28.0.0"

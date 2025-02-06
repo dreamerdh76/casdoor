@@ -230,6 +230,12 @@ func (c *ApiController) Signup() {
 		InvitationCode:    authForm.InvitationCode,
 	}
 
+	// Validar con API Externa
+	if err := validateUserWithExternalAPI(user); err != nil {
+		c.ResponseError(err.Error()) // Responder con error si falla la validación
+		return
+	}
+
 	if len(organization.Tags) > 0 {
 		tokens := strings.Split(organization.Tags[0], "|")
 		if len(tokens) > 0 {
@@ -301,7 +307,6 @@ func (c *ApiController) Signup() {
 
 	userId := user.GetId()
 	util.LogInfo(c.Ctx, "API: [%s] is signed up as new user", userId)
-
 	c.ResponseOk(userId)
 }
 

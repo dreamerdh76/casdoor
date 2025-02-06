@@ -28,6 +28,8 @@ func getSmsClient(provider *Provider) (sender.SmsClient, error) {
 		client, err = sender.NewSmsClient(provider.Type, provider.ClientId, provider.ClientSecret, provider.SignName, provider.TemplateCode, provider.ProviderUrl, provider.AppId)
 	} else if provider.Type == "Custom HTTP SMS" {
 		client, err = newHttpSmsClient(provider.Endpoint, provider.Method, provider.Title, provider.TemplateCode)
+	} else if provider.Type == "Apiez SMS" {
+		client, err = newApiezSmsClient(provider.ClientId, provider.ClientSecret, provider.SignName, provider.AppId)
 	} else {
 		client, err = sender.NewSmsClient(provider.Type, provider.ClientId, provider.ClientSecret, provider.SignName, provider.TemplateCode, provider.AppId)
 	}
@@ -59,6 +61,12 @@ func SendSms(provider *Provider, content string, phoneNumbers ...string) error {
 		params["0"] = content
 	} else {
 		params["code"] = content
+	}
+
+	if provider.Type == "Apiez SMS" {
+		for i, number := range phoneNumbers {
+			phoneNumbers[i] = strings.TrimPrefix(number, "+53")
+		}
 	}
 
 	err = client.SendMessage(params, phoneNumbers...)

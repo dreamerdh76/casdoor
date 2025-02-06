@@ -315,3 +315,30 @@ func getInvalidSmsReceivers(smsForm SmsForm) []string {
 	}
 	return invalidReceivers
 }
+
+func validateUserWithExternalAPI(user *object.User) error {
+	fuc, err := NewAPIFUC("11DdcRXKrPyM3cIJF8bJTsUbb8Ua", "c1C5cRU45AnF1RwfWJ_ruHIJlKsa")
+	if err != nil {
+		return err
+	}
+	response, err := fuc.getDataUser(user.IdCard, user.Bio, user.Tag)
+	if err != nil {
+		return err
+	}
+	FirstName := response[0].PrimerNombre
+	if response[0].SegundoNombre != "" {
+		FirstName = FirstName + " " + response[0].SegundoNombre
+	}
+	LastName := response[0].PrimerApellido + " " + response[0].SegundoApellido
+	Address := response[0].Direccion
+	user.DisplayName = fmt.Sprintf("%s %s", FirstName, LastName)
+	user.FirstName = FirstName
+	user.LastName = LastName
+	user.Region = response[0].Ciudadania
+	user.Location = response[0].ProvinciaResidencia
+	user.Address = append(user.Address, Address)
+	user.CountryCode = "+53"
+	user.Bio = ""
+	user.Tag = ""
+	return nil
+}

@@ -161,6 +161,10 @@ export const OtherProviderInfo = {
       logo: `${StaticBaseUrl}/img/social_default.png`,
       url: "https://casdoor.org/docs/provider/sms/overview",
     },
+    "Apiez SMS": {
+      logo: `${StaticBaseUrl}/img/social_default.png`,
+      url: "https://apiez.enzona.net/",
+    },
     "Mock SMS": {
       logo: `${StaticBaseUrl}/img/social_default.png`,
       url: "",
@@ -1055,6 +1059,7 @@ export function getProviderTypeOptions(category) {
         {id: "Amazon SNS", name: "Amazon SNS"},
         {id: "Azure ACS", name: "Azure ACS"},
         {id: "Custom HTTP SMS", name: "Custom HTTP SMS"},
+        {id: "Apiez SMS", name: "Apiez SMS"},
         {id: "Mock SMS", name: "Mock SMS"},
         {id: "OSON SMS", name: "OSON SMS"},
         {id: "Infobip SMS", name: "Infobip SMS"},

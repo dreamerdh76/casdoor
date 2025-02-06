@@ -203,6 +203,8 @@ class ProviderEditPage extends React.Component {
     case "SMS":
       if (provider.type === "Volc Engine SMS" || provider.type === "Amazon SNS" || provider.type === "Baidu Cloud SMS") {
         return Setting.getLabel(i18next.t("provider:Access key"), i18next.t("provider:Access key - Tooltip"));
+      } else if (provider.type === "Apiez SMS") {
+        return Setting.getLabel(i18next.t("provider:Consumer key"), i18next.t("provider:Consumer key - Tooltip"));
       } else if (provider.type === "Huawei Cloud SMS") {
         return Setting.getLabel(i18next.t("provider:App key"), i18next.t("provider:App key - Tooltip"));
       } else if (provider.type === "UCloud SMS") {
@@ -252,6 +254,8 @@ class ProviderEditPage extends React.Component {
     case "SMS":
       if (provider.type === "Volc Engine SMS" || provider.type === "Amazon SNS" || provider.type === "Baidu Cloud SMS" || provider.type === "OSON SMS") {
         return Setting.getLabel(i18next.t("provider:Secret access key"), i18next.t("provider:Secret access key - Tooltip"));
+      } else if (provider.type === "Apiez SMS") {
+        return Setting.getLabel(i18next.t("provider:Consumer secret"), i18next.t("provider:Consumer secret - Tooltip"));
       } else if (provider.type === "Huawei Cloud SMS") {
         return Setting.getLabel(i18next.t("provider:App secret"), i18next.t("provider:AppSecret - Tooltip"));
       } else if (provider.type === "UCloud SMS") {
@@ -374,6 +378,9 @@ class ProviderEditPage extends React.Component {
       } else if (provider.type === "Baidu Cloud SMS") {
         text = i18next.t("provider:Endpoint");
         tooltip = i18next.t("provider:Endpoint - Tooltip");
+      } else if (provider.type === "Apiez SMS") {
+        text = i18next.t("provider:Endpoint");
+        tooltip = i18next.t("provider:Region endpoint for Internet - Tooltip");
       } else if (provider.type === "Infobip SMS") {
         text = i18next.t("provider:Base URL");
         tooltip = i18next.t("provider:Base URL - Tooltip");
