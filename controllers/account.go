@@ -307,6 +307,7 @@ func (c *ApiController) Signup() {
 
 	userId := user.GetId()
 	util.LogInfo(c.Ctx, "API: [%s] is signed up as new user", userId)
+
 	c.ResponseOk(userId)
 }
 

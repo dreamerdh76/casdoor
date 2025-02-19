@@ -592,6 +592,8 @@
     "Secret Key": "Secret Key"
   },
   "model": {
+    "Advanced Editor": "Editor lanjutan",
+    "Basic Editor": "Editor dasar",
     "Edit Model": "Mengedit Model",
     "Model text": "Teks Model",
     "Model text - Tooltip": "Model kontrol akses Casbin, termasuk model bawaan seperti ACL, RBAC, ABAC, RESTful, dll. Anda juga dapat membuat model kustom. Untuk informasi lebih lanjut, silakan kunjungi situs web Casbin",
@@ -755,6 +757,7 @@
     "Sold": "Terjual",
     "Sold - Tooltip": "Jumlah terjual",
     "Stripe": "Stripe",
+    "AirWallex": "AirWallex",
     "Tag - Tooltip": "Tag produk",
     "Test buy page..": "Halaman pembelian uji coba.",
     "There is no payment channel for this product.": "Tidak ada saluran pembayaran untuk produk ini.",

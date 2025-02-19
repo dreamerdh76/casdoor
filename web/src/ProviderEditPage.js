@@ -203,7 +203,7 @@ class ProviderEditPage extends React.Component {
     case "SMS":
       if (provider.type === "Volc Engine SMS" || provider.type === "Amazon SNS" || provider.type === "Baidu Cloud SMS") {
         return Setting.getLabel(i18next.t("provider:Access key"), i18next.t("provider:Access key - Tooltip"));
-      } else if (provider.type === "Apiez SMS") {
+      } else if (provider.type === "Enzona SMS") {
         return Setting.getLabel(i18next.t("provider:Consumer key"), i18next.t("provider:Consumer key - Tooltip"));
       } else if (provider.type === "Huawei Cloud SMS") {
         return Setting.getLabel(i18next.t("provider:App key"), i18next.t("provider:App key - Tooltip"));
@@ -254,7 +254,7 @@ class ProviderEditPage extends React.Component {
     case "SMS":
       if (provider.type === "Volc Engine SMS" || provider.type === "Amazon SNS" || provider.type === "Baidu Cloud SMS" || provider.type === "OSON SMS") {
         return Setting.getLabel(i18next.t("provider:Secret access key"), i18next.t("provider:Secret access key - Tooltip"));
-      } else if (provider.type === "Apiez SMS") {
+      } else if (provider.type === "Enzona SMS") {
         return Setting.getLabel(i18next.t("provider:Consumer secret"), i18next.t("provider:Consumer secret - Tooltip"));
       } else if (provider.type === "Huawei Cloud SMS") {
         return Setting.getLabel(i18next.t("provider:App secret"), i18next.t("provider:AppSecret - Tooltip"));
@@ -301,6 +301,8 @@ class ProviderEditPage extends React.Component {
         return Setting.getLabel(i18next.t("provider:Scene"), i18next.t("provider:Scene - Tooltip"));
       } else if (provider.type === "WeChat Pay") {
         return Setting.getLabel(i18next.t("provider:App ID"), i18next.t("provider:App ID - Tooltip"));
+      } else if (provider.type === "CUCloud") {
+        return Setting.getLabel(i18next.t("provider:Account ID"), i18next.t("provider:Account ID - Tooltip"));
       } else {
         return Setting.getLabel(i18next.t("provider:Client ID 2"), i18next.t("provider:Client ID 2 - Tooltip"));
       }
@@ -378,7 +380,7 @@ class ProviderEditPage extends React.Component {
       } else if (provider.type === "Baidu Cloud SMS") {
         text = i18next.t("provider:Endpoint");
         tooltip = i18next.t("provider:Endpoint - Tooltip");
-      } else if (provider.type === "Apiez SMS") {
+      } else if (provider.type === "Enzona SMS") {
         text = i18next.t("provider:Endpoint");
         tooltip = i18next.t("provider:Region endpoint for Internet - Tooltip");
       } else if (provider.type === "Infobip SMS") {
@@ -400,6 +402,9 @@ class ProviderEditPage extends React.Component {
       } else if (provider.type === "Line" || provider.type === "Matrix" || provider.type === "Rocket Chat") {
         text = i18next.t("provider:App Key");
         tooltip = i18next.t("provider:App Key - Tooltip");
+      } else if (provider.type === "CUCloud") {
+        text = i18next.t("provider:Topic name");
+        tooltip = i18next.t("provider:Topic name - Tooltip");
       }
     }
 
@@ -467,6 +472,39 @@ class ProviderEditPage extends React.Component {
     this.updateProviderField("idP", cert);
     this.updateProviderField("endpoint", endpoint);
     this.updateProviderField("issuerUrl", issuerUrl);
+  }
+
+  fetchSamlMetadata() {
+    this.setState({
+      metadataLoading: true,
+    });
+    fetch(this.state.requestUrl, {
+      method: "GET",
+    }).then(res => {
+      if (!res.ok) {
+        return Promise.reject("error");
+      }
+      return res.text();
+    }).then(text => {
+      this.updateProviderField("metadata", text);
+      this.parseSamlMetadata();
+      Setting.showMessage("success", i18next.t("general:Successfully added"));
+    }).catch(err => {
+      Setting.showMessage("error", err.message);
+    }).finally(() => {
+      this.setState({
+        metadataLoading: false,
+      });
+    });
+  }
+
+  parseSamlMetadata() {
+    try {
+      this.loadSamlConfiguration();
+      Setting.showMessage("success", i18next.t("provider:Parse metadata successfully"));
+    } catch (err) {
+      Setting.showMessage("error", i18next.t("provider:Can not parse metadata"));
+    }
   }
 
   renderProvider() {
@@ -641,6 +679,20 @@ class ProviderEditPage extends React.Component {
           )
         }
         {
+          this.state.provider.category === "OAuth" ? (
+            <Row style={{marginTop: "20px"}} >
+              <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
+                {Setting.getLabel(i18next.t("provider:Email regex"), i18next.t("provider:Email regex - Tooltip"))} :
+              </Col>
+              <Col span={22}>
+                <TextArea rows={4} value={this.state.provider.emailRegex} onChange={e => {
+                  this.updateProviderField("emailRegex", e.target.value);
+                }} />
+              </Col>
+            </Row>
+          ) : null
+        }
+        {
           this.state.provider.type === "Custom" ? (
             <React.Fragment>
               {
@@ -764,7 +816,7 @@ class ProviderEditPage extends React.Component {
             )
         }
         {
-          this.state.provider.category !== "Email" && this.state.provider.type !== "WeChat" && this.state.provider.type !== "Apple" && this.state.provider.type !== "Aliyun Captcha" && this.state.provider.type !== "WeChat Pay" && this.state.provider.type !== "Twitter" && this.state.provider.type !== "Reddit" ? null : (
+          this.state.provider.category !== "Email" && this.state.provider.type !== "WeChat" && this.state.provider.type !== "Apple" && this.state.provider.type !== "Aliyun Captcha" && this.state.provider.type !== "WeChat Pay" && this.state.provider.type !== "Twitter" && this.state.provider.type !== "Reddit" && this.state.provider.type !== "CUCloud" ? null : (
             <React.Fragment>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
@@ -777,7 +829,7 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
               {
-                (this.state.provider.type === "WeChat Pay") || (this.state.provider.category === "Email" && (this.state.provider.type === "Azure ACS" || this.state.provider.type === "SendGrid")) ? null : (
+                (this.state.provider.type === "WeChat Pay" || this.state.provider.type === "CUCloud") || (this.state.provider.category === "Email" && (this.state.provider.type === "Azure ACS" || this.state.provider.type === "SendGrid")) ? null : (
                   <Row style={{marginTop: "20px"}} >
                     <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
                       {this.getClientSecret2Label(this.state.provider)} :
@@ -863,9 +915,9 @@ class ProviderEditPage extends React.Component {
             </Row>
           )
         }
-        {this.state.provider.category === "Storage" || ["Custom HTTP SMS", "Custom HTTP Email"].includes(this.state.provider.type) ? (
+        {this.state.provider.category === "Storage" || ["Custom HTTP SMS", "Custom HTTP Email", "CUCloud"].includes(this.state.provider.type) ? (
           <div>
-            {["Local File System"].includes(this.state.provider.type) ? null : (
+            {["Local File System", "CUCloud"].includes(this.state.provider.type) ? null : (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={2}>
                   {Setting.getLabel(i18next.t("provider:Endpoint"), i18next.t("provider:Region endpoint for Internet"))} :
@@ -877,7 +929,7 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
             )}
-            {["Custom HTTP SMS", "Local File System", "MinIO", "Tencent Cloud COS", "Google Cloud Storage", "Qiniu Cloud Kodo", "Synology", "Casdoor"].includes(this.state.provider.type) ? null : (
+            {["Custom HTTP SMS", "Local File System", "MinIO", "Tencent Cloud COS", "Google Cloud Storage", "Qiniu Cloud Kodo", "Synology", "Casdoor", "CUCloud"].includes(this.state.provider.type) ? null : (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={2}>
                   {Setting.getLabel(i18next.t("provider:Endpoint (Intranet)"), i18next.t("provider:Region endpoint for Intranet"))} :
@@ -889,7 +941,7 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
             )}
-            {["Custom HTTP SMS", "Local File System"].includes(this.state.provider.type) ? null : (
+            {["Custom HTTP SMS", "Local File System", "CUCloud"].includes(this.state.provider.type) ? null : (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={2}>
                   {["Casdoor"].includes(this.state.provider.type) ?
@@ -903,7 +955,7 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
             )}
-            {["Custom HTTP SMS"].includes(this.state.provider.type) ? null : (
+            {["Custom HTTP SMS", "CUCloud"].includes(this.state.provider.type) ? null : (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={2}>
                   {Setting.getLabel(i18next.t("provider:Path prefix"), i18next.t("provider:Path prefix - Tooltip"))} :
@@ -915,7 +967,7 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
             )}
-            {["Custom HTTP SMS", "Synology", "Casdoor"].includes(this.state.provider.type) ? null : (
+            {["Custom HTTP SMS", "Synology", "Casdoor", "CUCloud"].includes(this.state.provider.type) ? null : (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={2}>
                   {Setting.getLabel(i18next.t("provider:Domain"), i18next.t("provider:Domain - Tooltip"))} :
@@ -939,7 +991,7 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
             ) : null}
-            {["AWS S3", "Tencent Cloud COS", "Qiniu Cloud Kodo", "Casdoor", "CUCloud OSS"].includes(this.state.provider.type) ? (
+            {["AWS S3", "Tencent Cloud COS", "Qiniu Cloud Kodo", "Casdoor", "CUCloud OSS", "MinIO", "CUCloud"].includes(this.state.provider.type) ? (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={2}>
                   {["Casdoor"].includes(this.state.provider.type) ?
@@ -978,7 +1030,7 @@ class ProviderEditPage extends React.Component {
                   </Col>
                 </Row>
               ) : null}
-              {["Custom HTTP"].includes(this.state.provider.type) ? (
+              {["Custom HTTP", "CUCloud"].includes(this.state.provider.type) ? (
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
                     {Setting.getLabel(i18next.t("provider:Parameter"), i18next.t("provider:Parameter - Tooltip"))} :
@@ -990,7 +1042,7 @@ class ProviderEditPage extends React.Component {
                   </Col>
                 </Row>
               ) : null}
-              {["Google Chat"].includes(this.state.provider.type) ? (
+              {["Google Chat", "CUCloud"].includes(this.state.provider.type) ? (
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
                     {Setting.getLabel(i18next.t("provider:Metadata"), i18next.t("provider:Metadata - Tooltip"))} :
@@ -1232,6 +1284,21 @@ class ProviderEditPage extends React.Component {
               </Row>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
+                  {Setting.getLabel(i18next.t("provider:Metadata url"), i18next.t("provider:Metadata url - Tooltip"))} :
+                </Col>
+                <Col span={6} >
+                  <Input value={this.state.requestUrl} onChange={e => {
+                    this.setState({
+                      requestUrl: e.target.value,
+                    });
+                  }} />
+                </Col>
+                <Col span={16} >
+                  <Button type="primary" loading={this.state.metadataLoading} onClick={() => {this.fetchSamlMetadata();}}>{i18next.t("general:Request")}</Button>
+                </Col>
+              </Row>
+              <Row style={{marginTop: "20px"}} >
+                <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
                   {Setting.getLabel(i18next.t("provider:Metadata"), i18next.t("provider:Metadata - Tooltip"))} :
                 </Col>
                 <Col span={22}>
@@ -1243,14 +1310,7 @@ class ProviderEditPage extends React.Component {
               <Row style={{marginTop: "20px"}}>
                 <Col style={{marginTop: "5px"}} span={2} />
                 <Col span={2}>
-                  <Button type="primary" onClick={() => {
-                    try {
-                      this.loadSamlConfiguration();
-                      Setting.showMessage("success", i18next.t("provider:Parse metadata successfully"));
-                    } catch (err) {
-                      Setting.showMessage("error", i18next.t("provider:Can not parse metadata"));
-                    }
-                  }}>
+                  <Button type="primary" onClick={() => {this.parseSamlMetadata();}}>
                     {i18next.t("provider:Parse")}
                   </Button>
                 </Col>

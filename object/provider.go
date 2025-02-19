@@ -16,6 +16,7 @@ package object
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/beego/beego/context"
@@ -70,6 +71,7 @@ type Provider struct {
 	IdP                    string `xorm:"mediumtext" json:"idP"`
 	IssuerUrl              string `xorm:"varchar(100)" json:"issuerUrl"`
 	EnableSignAuthnRequest bool   `json:"enableSignAuthnRequest"`
+	EmailRegex             string `xorm:"varchar(200)" json:"emailRegex"`
 
 	ProviderUrl string `xorm:"varchar(200)" json:"providerUrl"`
 }
@@ -200,6 +202,13 @@ func UpdateProvider(id string, provider *Provider) (bool, error) {
 		return false, nil
 	}
 
+	if provider.EmailRegex != "" {
+		_, err := regexp.Compile(provider.EmailRegex)
+		if err != nil {
+			return false, err
+		}
+	}
+
 	if name != provider.Name {
 		err := providerChangeTrigger(name, provider.Name)
 		if err != nil {
@@ -232,6 +241,13 @@ func AddProvider(provider *Provider) (bool, error) {
 	if provider.Type == "Tencent Cloud COS" {
 		provider.Endpoint = util.GetEndPoint(provider.Endpoint)
 		provider.IntranetEndpoint = util.GetEndPoint(provider.IntranetEndpoint)
+	}
+
+	if provider.EmailRegex != "" {
+		_, err := regexp.Compile(provider.EmailRegex)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	affected, err := ormer.Engine.Insert(provider)
@@ -305,6 +321,12 @@ func GetPaymentProvider(p *Provider) (pp.PaymentProvider, error) {
 		return pp, nil
 	} else if typ == "Stripe" {
 		pp, err := pp.NewStripePaymentProvider(p.ClientId, p.ClientSecret)
+		if err != nil {
+			return nil, err
+		}
+		return pp, nil
+	} else if typ == "AirWallex" {
+		pp, err := pp.NewAirwallexPaymentProvider(p.ClientId, p.ClientSecret)
 		if err != nil {
 			return nil, err
 		}
@@ -421,7 +443,7 @@ func FromProviderToIdpInfo(ctx *context.Context, provider *Provider) *idp.Provid
 			providerInfo.ClientId = provider.ClientId2
 			providerInfo.ClientSecret = provider.ClientSecret2
 		}
-	} else if provider.Type == "AzureAD" || provider.Type == "AzureADB2C" || provider.Type == "ADFS" || provider.Type == "Okta" {
+	} else if provider.Type == "ADFS" || provider.Type == "AzureAD" || provider.Type == "AzureADB2C" || provider.Type == "Casdoor" || provider.Type == "Okta" {
 		providerInfo.HostUrl = provider.Domain
 	}
 

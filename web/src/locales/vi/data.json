@@ -592,6 +592,8 @@
     "Secret Key": "Secret Key"
   },
   "model": {
+    "Advanced Editor": "Editor nâng cao",
+    "Basic Editor": "Editor cơ bản",
     "Edit Model": "Sửa mô hình",
     "Model text": "Văn bản mẫu",
     "Model text - Tooltip": "Mô hình kiểm soát truy cập Casbin, bao gồm các mô hình tích hợp như ACL, RBAC, ABAC, RESTful, v.v. Bạn cũng có thể tạo các mô hình tùy chỉnh. Để biết thêm thông tin, vui lòng truy cập trang web Casbin",
@@ -755,6 +757,7 @@
     "Sold": "Đã bán",
     "Sold - Tooltip": "Số lượng bán ra",
     "Stripe": "Stripe",
+    "AirWallex": "AirWallex",
     "Tag - Tooltip": "Nhãn sản phẩm",
     "Test buy page..": "Trang mua thử.",
     "There is no payment channel for this product.": "Không có kênh thanh toán cho sản phẩm này.",

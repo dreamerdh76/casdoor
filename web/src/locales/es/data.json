@@ -592,6 +592,8 @@
     "Secret Key": "Secret Key"
   },
   "model": {
+    "Advanced Editor": "Editor avanzado",
+    "Basic Editor": "Editor básico",
     "Edit Model": "Editar modelo",
     "Model text": "Texto modelo",
     "Model text - Tooltip": "Modelo de control de acceso Casbin, incluyendo modelos integrados como ACL, RBAC, ABAC, RESTful, etc. También puede crear modelos personalizados. Para obtener más información, visite el sitio web de Casbin",
@@ -755,6 +757,7 @@
     "Sold": "Vendido",
     "Sold - Tooltip": "Cantidad vendida",
     "Stripe": "Stripe",
+    "AirWallex": "AirWallex",
     "Tag - Tooltip": "Etiqueta de producto",
     "Test buy page..": "Página de compra de prueba.",
     "There is no payment channel for this product.": "No hay canal de pago para este producto.",

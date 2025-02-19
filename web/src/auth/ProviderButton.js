@@ -40,9 +40,11 @@ import SteamLoginButton from "./SteamLoginButton";
 import BilibiliLoginButton from "./BilibiliLoginButton";
 import OktaLoginButton from "./OktaLoginButton";
 import DouyinLoginButton from "./DouyinLoginButton";
+import KwaiLoginButton from "./KwaiLoginButton";
 import LoginButton from "./LoginButton";
 import * as AuthBackend from "./AuthBackend";
 import {WechatOfficialAccountModal} from "./Util";
+import * as Setting from "../Setting";
 
 function getSigninButton(provider) {
   const text = i18next.t("login:Sign in with {type}").replace("{type}", provider.displayName !== "" ? provider.displayName : provider.type);
@@ -96,6 +98,8 @@ function getSigninButton(provider) {
     return <OktaLoginButton text={text} align={"center"} />;
   } else if (provider.type === "Douyin") {
     return <DouyinLoginButton text={text} align={"center"} />;
+  } else if (provider.type === "Kwai") {
+    return <KwaiLoginButton text={text} align={"center"} />;
   } else {
     return <LoginButton key={provider.type} type={provider.type} logoUrl={getProviderLogoURL(provider)} />;
   }
@@ -111,10 +115,14 @@ function goToSamlUrl(provider, location) {
 
   const relayState = `${clientId}&${state}&${providerName}&${realRedirectUri}&${redirectUri}`;
   AuthBackend.getSamlLogin(`${provider.owner}/${providerName}`, btoa(relayState)).then((res) => {
-    if (res.data2 === "POST") {
-      document.write(res.data);
+    if (res.status === "ok") {
+      if (res.data2 === "POST") {
+        document.write(res.data);
+      } else {
+        window.location.href = res.data;
+      }
     } else {
-      window.location.href = res.data;
+      Setting.showMessage("error", res.msg);
     }
   });
 }

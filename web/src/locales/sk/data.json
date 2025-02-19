@@ -592,6 +592,8 @@
     "Secret Key": "Secret Key"
   },
   "model": {
+    "Advanced Editor": "Rozšírený editor",
+    "Basic Editor": "Základný editor",
     "Edit Model": "Upraviť model",
     "Model text": "Text modelu",
     "Model text - Tooltip": "Model prístupu Casbin, vrátane vstavaných modelov ako ACL, RBAC, ABAC, RESTful, atď. Môžete tiež vytvoriť vlastné modely. Pre viac informácií navštívte web Casbin",
@@ -755,6 +757,7 @@
     "Sold": "Predané",
     "Sold - Tooltip": "Množstvo predaných kusov",
     "Stripe": "Stripe",
+    "AirWallex": "AirWallex",
     "Tag - Tooltip": "Štítok produktu",
     "Test buy page..": "Testovať stránku nákupu..",
     "There is no payment channel for this product.": "Pre tento produkt neexistuje platobný kanál.",

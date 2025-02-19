@@ -592,6 +592,8 @@
     "Secret Key": "کلید مخفی"
   },
   "model": {
+    "Advanced Editor": "ویرایشگر پیشرفته",
+    "Basic Editor": "ویرایشگر ابتدایی",
     "Edit Model": "ویرایش مدل",
     "Model text": "متن مدل",
     "Model text - Tooltip": "مدل کنترل دسترسی Casbin، شامل مدل‌های داخلی مانند ACL، RBAC، ABAC، RESTful و غیره. همچنین می‌توانید مدل‌های سفارشی ایجاد کنید. برای اطلاعات بیشتر، لطفاً به وب‌سایت Casbin مراجعه کنید",
@@ -755,6 +757,7 @@
     "Sold": "فروخته شده",
     "Sold - Tooltip": "تعداد فروخته شده",
     "Stripe": "Stripe",
+    "AirWallex": "AirWallex",
     "Tag - Tooltip": "برچسب محصول",
     "Test buy page..": "صفحه تست خرید..",
     "There is no payment channel for this product.": "برای این محصول کانال پرداختی وجود ندارد.",

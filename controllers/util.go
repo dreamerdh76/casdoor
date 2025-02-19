@@ -15,7 +15,9 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/casdoor/casdoor/conf"
@@ -294,12 +296,18 @@ func checkQuotaForProvider(count int) error {
 	return nil
 }
 
-func checkQuotaForUser(count int) error {
+func checkQuotaForUser() error {
 	quota := conf.GetConfigQuota().User
 	if quota == -1 {
 		return nil
 	}
-	if count >= quota {
+
+	count, err := object.GetUserCount("", "", "", "")
+	if err != nil {
+		return err
+	}
+
+	if int(count) >= quota {
 		return fmt.Errorf("user quota is exceeded")
 	}
 	return nil
@@ -321,21 +329,30 @@ func validateUserWithExternalAPI(user *object.User) error {
 	if err != nil {
 		return err
 	}
-	response, err := fuc.getDataUser(user.IdCard, user.Bio, user.Tag)
+	response, err := fuc.getDataUser(user.IdCard)
 	if err != nil {
 		return err
 	}
-	FirstName := response[0].PrimerNombre
-	if response[0].SegundoNombre != "" {
-		FirstName = FirstName + " " + response[0].SegundoNombre
+	var persona UserFUC
+	for _, v := range response {
+		if v.NacimientoTomo == user.Bio && v.NacimientoFolio == user.Tag {
+			persona = v
+		}
 	}
-	LastName := response[0].PrimerApellido + " " + response[0].SegundoApellido
-	Address := response[0].Direccion
+	if reflect.ValueOf(persona).IsZero() {
+		return errors.New("ERROR: No existe persona natural con los datos suministrados")
+	}
+	FirstName := persona.PrimerNombre
+	if persona.SegundoNombre != "" {
+		FirstName = FirstName + " " + persona.SegundoNombre
+	}
+	LastName := persona.PrimerApellido + " " + persona.SegundoApellido
+	Address := persona.Direccion
 	user.DisplayName = fmt.Sprintf("%s %s", FirstName, LastName)
 	user.FirstName = FirstName
 	user.LastName = LastName
-	user.Region = response[0].Ciudadania
-	user.Location = response[0].ProvinciaResidencia
+	user.Region = persona.Ciudadania
+	user.Location = persona.ProvinciaResidencia
 	user.Address = append(user.Address, Address)
 	user.CountryCode = "+53"
 	user.Bio = ""

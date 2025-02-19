@@ -36,6 +36,7 @@ const {Footer, Content} = Layout;
 
 import {setTwoToneColor} from "@ant-design/icons";
 import * as ApplicationBackend from "./backend/ApplicationBackend";
+import * as Cookie from "cookie";
 
 setTwoToneColor("rgb(87,52,211)");
 
@@ -269,7 +270,9 @@ class App extends Component {
     });
   }
 
-  renderFooter() {
+  renderFooter(logo, footerHtml) {
+    logo = logo ?? this.state.logo;
+    footerHtml = footerHtml ?? this.state.application?.footerHtml;
     return (
       <React.Fragment>
         {!this.state.account ? null : <div style={{display: "none"}} id="CasdoorApplicationName" value={this.state.account.signupApplication} />}
@@ -280,14 +283,14 @@ class App extends Component {
           }
         }>
           {
-            this.state.application?.footerHtml && this.state.application.footerHtml !== "" ?
+            footerHtml && footerHtml !== "" ?
               <React.Fragment>
-                <div dangerouslySetInnerHTML={{__html: this.state.application.footerHtml}} />
+                <div dangerouslySetInnerHTML={{__html: footerHtml}} />
               </React.Fragment>
               : (
                 Conf.CustomFooter !== null ? Conf.CustomFooter : (
                   <React.Fragment>
-                  Powered by <a target="_blank" href="https://casdoor.org" rel="noreferrer"><img style={{paddingBottom: "3px"}} height={"20px"} alt={"Casdoor"} src={this.state.logo} /></a>
+                  Powered by <a target="_blank" href="https://casdoor.org" rel="noreferrer"><img style={{paddingBottom: "3px"}} height={"20px"} alt={"Casdoor"} src={logo} /></a>
                   </React.Fragment>
                 )
               )
@@ -358,13 +361,37 @@ class App extends Component {
     }
   };
 
+  onLoginSuccess(redirectUrl) {
+    window.google?.accounts?.id?.cancel();
+    if (redirectUrl) {
+      localStorage.setItem("mfaRedirectUrl", redirectUrl);
+    }
+    this.getAccount();
+  }
+
   renderPage() {
     if (this.isDoorPages()) {
+      let themeData = this.state.themeData;
+      let logo = this.state.logo;
+      let footerHtml = null;
+      if (this.state.organization === undefined) {
+        const curCookie = Cookie.parse(document.cookie);
+        if (curCookie["organizationTheme"] && curCookie["organizationTheme"] !== "null") {
+          themeData = JSON.parse(curCookie["organizationTheme"]);
+        }
+        if (curCookie["organizationLogo"] && curCookie["organizationLogo"] !== "") {
+          logo = curCookie["organizationLogo"];
+        }
+        if (curCookie["organizationFootHtml"] && curCookie["organizationFootHtml"] !== "") {
+          footerHtml = curCookie["organizationFootHtml"];
+        }
+      }
+
       return (
         <ConfigProvider theme={{
           token: {
-            colorPrimary: this.state.themeData.colorPrimary,
-            borderRadius: this.state.themeData.borderRadius,
+            colorPrimary: themeData.colorPrimary,
+            borderRadius: themeData.borderRadius,
           },
           algorithm: Setting.getAlgorithm(this.state.themeAlgorithm),
         }}>
@@ -382,26 +409,20 @@ class App extends Component {
                           application: application,
                         });
                       }}
-                      onLoginSuccess={(redirectUrl) => {
-                        window.google?.accounts?.id?.cancel();
-                        if (redirectUrl) {
-                          localStorage.setItem("mfaRedirectUrl", redirectUrl);
-                        }
-                        this.getAccount();
-                      }}
+                      onLoginSuccess={(redirectUrl) => {this.onLoginSuccess(redirectUrl);}}
                       onUpdateAccount={(account) => this.onUpdateAccount(account)}
                       updataThemeData={this.setTheme}
                     /> :
                     <Switch>
-                      <Route exact path="/callback" component={AuthCallback} />
-                      <Route exact path="/callback/saml" component={SamlCallback} />
+                      <Route exact path="/callback" render={(props) => <AuthCallback {...props} {...this.props} application={this.state.application} onLoginSuccess={(redirectUrl) => {this.onLoginSuccess(redirectUrl);}} />} />
+                      <Route exact path="/callback/saml" render={(props) => <SamlCallback {...props} {...this.props} application={this.state.application} onLoginSuccess={(redirectUrl) => {this.onLoginSuccess(redirectUrl);}} />} />
                       <Route path="" render={() => <Result status="404" title="404 NOT FOUND" subTitle={i18next.t("general:Sorry, the page you visited does not exist.")}
                         extra={<a href="/"><Button type="primary">{i18next.t("general:Back Home")}</Button></a>} />} />
                     </Switch>
                 }
               </Content>
               {
-                this.renderFooter()
+                this.renderFooter(logo, footerHtml)
               }
               {
                 this.renderAiAssistant()

@@ -22,6 +22,7 @@ import (
 	_ "github.com/beego/beego/session/redis"
 	"github.com/casdoor/casdoor/authz"
 	"github.com/casdoor/casdoor/conf"
+	"github.com/casdoor/casdoor/controllers"
 	"github.com/casdoor/casdoor/ldap"
 	"github.com/casdoor/casdoor/object"
 	"github.com/casdoor/casdoor/proxy"
@@ -45,6 +46,7 @@ func main() {
 	object.InitCasvisorConfig()
 
 	util.SafeGoroutine(func() { object.RunSyncUsersJob() })
+	controllers.InitCLIDownloader()
 
 	// beego.DelStaticPath("/static")
 	// beego.SetStaticPath("/static", "web/build/static")
@@ -82,6 +84,11 @@ func main() {
 	port := beego.AppConfig.DefaultInt("httpport", 8000)
 	// logs.SetLevel(logs.LevelInformational)
 	logs.SetLogFuncCall(false)
+
+	err = util.StopOldInstance(port)
+	if err != nil {
+		panic(err)
+	}
 
 	go ldap.StartLdapServer()
 	go radius.StartRadiusServer()

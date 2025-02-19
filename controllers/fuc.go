@@ -121,12 +121,10 @@ func getToken(consumerKey, consumerSecret string) (string, error) {
 	return jsonResp["access_token"].(string), nil
 }
 
-func (f *APIFUC) getDataUser(IdCard, IdTomo, IdFolio string) ([]UserFUC, error) {
+func (f *APIFUC) getDataUser(IdCard string) ([]UserFUC, error) {
 	// Define the parameters
 	params := url.Values{}
 	params.Add("identidad_numero", IdCard)
-	params.Add("nacimiento_tomo", IdTomo)
-	params.Add("nacimiento_folio", IdFolio)
 	params.Add("similar", "false")
 
 	// Create the URL with the parameters
@@ -151,16 +149,14 @@ func (f *APIFUC) getDataUser(IdCard, IdTomo, IdFolio string) ([]UserFUC, error) 
 	// Leer la respuesta del API
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.New("no se pudo leer la respuesta del API FUC")
+		return nil, errors.New("ERROR: No se pudo leer la respuesta del API FUC")
 	}
 
 	var response []UserFUC
 
 	if err := json.Unmarshal(body, &response); err != nil {
-		return nil, errors.New("formato de respuesta inválido desde el API FUC")
+		return nil, errors.New("ERROR: Formato de respuesta inválido desde el API FUC")
 	}
-
-	fmt.Println(response)
 
 	return response, nil
 }

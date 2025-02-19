@@ -592,6 +592,8 @@
     "Secret Key": "Secret Key"
   },
   "model": {
+    "Advanced Editor": "Розширений редактор",
+    "Basic Editor": "Базовий редактор",
     "Edit Model": "Редагувати модель",
     "Model text": "Текст моделі",
     "Model text - Tooltip": "Модель контролю доступу Casbin, включаючи такі вбудовані моделі, як ACL, RBAC, ABAC, RESTful тощо. Ви також можете створювати власні моделі. ",
@@ -755,6 +757,7 @@
     "Sold": "Продано",
     "Sold - Tooltip": "Продана кількість",
     "Stripe": "смужка",
+    "AirWallex": "AirWallex",
     "Tag - Tooltip": "Тег товару",
     "Test buy page..": "Сторінка тестової покупки..",
     "There is no payment channel for this product.": "Для цього продукту немає платіжного каналу.",

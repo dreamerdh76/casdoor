@@ -129,6 +129,7 @@ type User struct {
 	Bilibili        string `xorm:"bilibili varchar(100)" json:"bilibili"`
 	Okta            string `xorm:"okta varchar(100)" json:"okta"`
 	Douyin          string `xorm:"douyin varchar(100)" json:"douyin"`
+	Kwai            string `xorm:"kwai varchar(100)" json:"kwai"`
 	Line            string `xorm:"line varchar(100)" json:"line"`
 	Amazon          string `xorm:"amazon varchar(100)" json:"amazon"`
 	Auth0           string `xorm:"auth0 varchar(100)" json:"auth0"`
@@ -237,6 +238,7 @@ type MfaAccount struct {
 	AccountName string `xorm:"varchar(100)" json:"accountName"`
 	Issuer      string `xorm:"varchar(100)" json:"issuer"`
 	SecretKey   string `xorm:"varchar(100)" json:"secretKey"`
+	Origin      string `xorm:"varchar(100)" json:"origin"`
 }
 
 type FaceId struct {
@@ -679,6 +681,10 @@ func UpdateUser(id string, user *User, columns []string, isAdmin bool) (bool, er
 		user.Password = oldUser.Password
 	}
 
+	if user.Id != oldUser.Id && user.Id == "" {
+		user.Id = oldUser.Id
+	}
+
 	if user.Avatar != oldUser.Avatar && user.Avatar != "" && user.PermanentAvatar != "*" {
 		user.PermanentAvatar, err = getPermanentAvatarUrl(user.Owner, user.Name, user.Avatar, false)
 		if err != nil {
@@ -693,7 +699,7 @@ func UpdateUser(id string, user *User, columns []string, isAdmin bool) (bool, er
 			"is_admin", "is_forbidden", "is_deleted", "hash", "is_default_avatar", "properties", "webauthnCredentials", "managedAccounts", "face_ids", "mfaAccounts",
 			"signin_wrong_times", "last_change_password_time", "last_signin_wrong_time", "groups", "access_key", "access_secret", "mfa_phone_enabled", "mfa_email_enabled",
 			"github", "google", "qq", "wechat", "facebook", "dingtalk", "weibo", "gitee", "linkedin", "wecom", "lark", "gitlab", "adfs",
-			"baidu", "alipay", "casdoor", "infoflow", "apple", "azuread", "azureadb2c", "slack", "steam", "bilibili", "okta", "douyin", "line", "amazon",
+			"baidu", "alipay", "casdoor", "infoflow", "apple", "azuread", "azureadb2c", "slack", "steam", "bilibili", "okta", "douyin", "kwai", "line", "amazon",
 			"auth0", "battlenet", "bitbucket", "box", "cloudfoundry", "dailymotion", "deezer", "digitalocean", "discord", "dropbox",
 			"eveonline", "fitbit", "gitea", "heroku", "influxcloud", "instagram", "intercom", "kakao", "lastfm", "mailru", "meetup",
 			"microsoftonline", "naver", "nextcloud", "onedrive", "oura", "patreon", "paypal", "salesforce", "shopify", "soundcloud",
@@ -783,17 +789,6 @@ func UpdateUserForAllFields(id string, user *User) (bool, error) {
 }
 
 func AddUser(user *User) (bool, error) {
-	// Validar si el campo IdCard es único
-	if user.IdCard != "" {
-		exists, err := ormer.Engine.Exist(&User{IdCard: user.IdCard})
-		if err != nil {
-			return false, fmt.Errorf("error al verificar la unicidad del carné de identidad: %v", err)
-		}
-		if exists {
-			return false, fmt.Errorf("El Carné de identidad '%s' ya existe", user.IdCard)
-		}
-	}
-
 	if user.Id == "" {
 		application, err := GetApplicationByUser(user)
 		if err != nil {
@@ -851,11 +846,14 @@ func AddUser(user *User) (bool, error) {
 		}
 	}
 
-	count, err := GetUserCount(user.Owner, "", "", "")
-	if err != nil {
-		return false, err
+	rankingItem := GetAccountItemByName("Ranking", organization)
+	if rankingItem != nil {
+		count, err := GetUserCount(user.Owner, "", "", "")
+		if err != nil {
+			return false, err
+		}
+		user.Ranking = int(count + 1)
 	}
-	user.Ranking = int(count + 1)
 
 	if user.Groups != nil && len(user.Groups) > 0 {
 		_, err = userEnforcer.UpdateGroupsForUser(user.GetId(), user.Groups)
@@ -963,6 +961,11 @@ func deleteUser(user *User) (bool, error) {
 func DeleteUser(user *User) (bool, error) {
 	// Forced offline the user first
 	_, err := DeleteSession(util.GetSessionId(user.Owner, user.Name, CasdoorApplication))
+	if err != nil {
+		return false, err
+	}
+
+	_, err = userEnforcer.DeleteGroupsForUser(user.GetId())
 	if err != nil {
 		return false, err
 	}
