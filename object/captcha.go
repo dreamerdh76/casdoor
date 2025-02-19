@@ -17,7 +17,10 @@ package object
 import (
 	"bytes"
 	"context"
+	"errors"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/casdoor/casdoor/conf"
@@ -73,16 +76,33 @@ func VerifyCaptcha(id string, digits string) bool {
 }
 
 func NewRedisClient() error {
+	if conf.GetConfigString("redisEndpoint") == "" {
+		return errors.New("error: redis not configurated")
+	}
 	readTimeout := 2 * time.Second
 	writeTimeout := 2 * time.Second
+	dns := strings.Split(conf.GetConfigString("redisEndpoint"), ",")
 
-	RedisClient = redis.NewClient(&redis.Options{
-		Network:      "tcp",
-		Addr:         conf.GetConfigString("redisEndpoint"),
-		DB:           0,
-		ReadTimeout:  readTimeout,
-		WriteTimeout: writeTimeout,
-	})
+	if len(dns) == 3 {
+		dbName, _ := strconv.Atoi(dns[1])
+		RedisClient = redis.NewClient(&redis.Options{
+			Network:      "tcp",
+			Addr:         dns[0],
+			Password:     dns[2],
+			DB:           dbName,
+			ReadTimeout:  readTimeout,
+			WriteTimeout: writeTimeout,
+		})
+	} else {
+		RedisClient = redis.NewClient(&redis.Options{
+			Network:      "tcp",
+			Addr:         conf.GetConfigString("redisEndpoint"),
+			Password:     "", // no password set
+			DB:           0,  // use default DB
+			ReadTimeout:  readTimeout,
+			WriteTimeout: writeTimeout,
+		})
+	}
 
 	_, err := RedisClient.Ping(ctx).Result()
 	return err
