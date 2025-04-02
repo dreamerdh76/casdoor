@@ -310,6 +310,30 @@ func getClaimsCustom(claims Claims, tokenField []string) jwt.MapClaims {
 		}
 	}
 
+	// ================================================
+	//    OBTENEMOS LOS NOMBRES DE ROLES DEL USUARIO
+	// ================================================
+	var roleNames []string
+	for _, r := range claims.User.Roles {
+		roleNames = append(roleNames, r.Name)
+	}
+
+	// ================================================
+	//    AÑADIMOS LOS CLAIMS DE HASURA
+	// ================================================
+	defaultRole := "user"
+	if len(roleNames) > 0 {
+		defaultRole = roleNames[0]
+	}
+
+	hasuraClaims := map[string]interface{}{
+		"x-hasura-allowed-roles":       roleNames,
+		"x-hasura-default-role":        defaultRole,
+		"x-hasura-user-id":             claims.User.Id,
+		"x-hasura-entity-denomination": claims.User.Affiliation,
+	}
+	res["https://hasura.io/jwt/claims"] = hasuraClaims
+
 	return res
 }
 
