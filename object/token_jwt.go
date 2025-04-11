@@ -333,7 +333,7 @@ func getClaimsCustom(claims Claims, tokenField []string) jwt.MapClaims {
 		"x-hasura-entity-denomination": claims.User.Affiliation,
 	}
 	res["https://hasura.io/jwt/claims"] = hasuraClaims
-
+	res["allowed-roles"] = roleNames
 	return res
 }
 
