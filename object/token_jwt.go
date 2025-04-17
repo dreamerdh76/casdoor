@@ -321,10 +321,7 @@ func getClaimsCustom(claims Claims, tokenField []string) jwt.MapClaims {
 	// ================================================
 	//    AÑADIMOS LOS CLAIMS DE HASURA
 	// ================================================
-	defaultRole := "user"
-	if len(roleNames) > 0 {
-		defaultRole = roleNames[0]
-	}
+	defaultRole := "regular-use"
 
 	hasuraClaims := map[string]interface{}{
 		"x-hasura-allowed-roles":       roleNames,
